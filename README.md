@@ -103,6 +103,27 @@ Exposed tools:
 - `headroom_retrieve(token_or_hash, query)`: Retrieves individual blocks by hash or query.
 - `headroom_stats()`: Exposes cache hit ratios and total byte savings.
 
+
+---
+
+## Token Reduction & Answer Quality (How it Works)
+
+Antigravity Headroom achieves a delicate balance between **dramatic token savings (50% to 90%)** and **high answer quality** by using a reversible hybrid approach:
+
+### 1. Token Savings Strategy
+* **Code Compressor**: Strips method/function bodies leaving only class/method headers, imports, and docstrings. Replaces them with a small 80-byte token (`<<ccr:hash,lang,size>>`). This yields a **50% to 80%** reduction in code token size.
+* **JsonCrusher**: Collapses lists of database items or files, preserving only the first/last $K$ elements and any detected errors/warnings. This yields a **70% to 90%** reduction in JSON payload tokens.
+* **Log Crusher**: Strips repetitive loop lines in shell outputs, saving **70% to 90%** log tokens.
+* **CacheAligner**: Replaces volatile dates, timestamps, and commit hashes with static placeholders, boosting prompt caching hit ratios on LLM providers.
+
+### 2. Quality Preservation via Reversibility (CCR)
+If text compression were irreversible, the LLM's answers would lose detail (e.g., it wouldn't know how a function is implemented). Antigravity Headroom solves this through **Context-Compressed Retrieval (CCR)**:
+1. **Pristine Local Cache**: The original uncompressed source blocks are saved locally in the SQLite database.
+2. **Skeleton Reasoning**: The LLM reads only the lightweight "skeleton" (signatures and structure) for its initial reasoning, saving massive token budgets.
+3. **On-Demand Retrieval**: When the LLM decides it needs to modify a specific method, inspect a truncated log, or read database details, it calls the `headroom_retrieve` tool (or the CLI utility) using the token's hash. The original text is retrieved and injected back into the LLM's context on-the-fly.
+
+This ensures the LLM retains **full-fidelity access to all details** while spending only a fraction of the token cost!
+
 ---
 
 ## Limitations / What It Cannot Do
